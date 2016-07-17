@@ -15,6 +15,9 @@ class (Applicative f) => Boolean f exp where
 
 class BooleanType f tipe where
   boolean :: f tipe
+  
+instance Boolean Maybe e where
+  true = Just 
 
 {-
 class TypeVariable tipe where
