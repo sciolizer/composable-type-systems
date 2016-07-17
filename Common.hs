@@ -7,21 +7,20 @@ module Common where
 
 import Control.Applicative
 
-class Boolean exp where
-  true :: exp
-  false :: exp
-  viewBoolean :: exp -> Maybe Bool
-  ifThenElse :: exp -> exp -> exp -> exp
-  viewIfThenElse :: exp -> Maybe (exp, exp, exp)
+-- or maybe just pointed?
+class (Applicative f) => Boolean f exp where
+  true :: f exp
+  false :: f exp
+  ifThenElse :: exp -> exp -> exp -> f exp
 
-class BooleanType tipe where
-  boolean :: tipe
-  viewBooleanType :: tipe -> Bool
+class BooleanType f tipe where
+  boolean :: f tipe
 
+{-
 class TypeVariable tipe where
   variable :: String -> tipe
   viewVariable :: tipe -> Maybe String
-
+-}
 -- todo: shrink to Applicative
 class (Applicative f, Monad f) => TypeEnvironment f exp tipe | f -> exp tipe where
   typeCheck :: exp -> f tipe
