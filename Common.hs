@@ -1,0 +1,59 @@
+-- {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FunctionalDependencies #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+-- {-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE ViewPatterns #-}
+module Common where
+
+import Control.Applicative
+
+class Boolean exp where
+  true :: exp
+  false :: exp
+  viewBoolean :: exp -> Maybe Bool
+  ifThenElse :: exp -> exp -> exp -> exp
+  viewIfThenElse :: exp -> Maybe (exp, exp, exp)
+
+class BooleanType tipe where
+  boolean :: tipe
+  viewBooleanType :: tipe -> Bool
+
+class TypeVariable tipe where
+  variable :: String -> tipe
+  viewVariable :: tipe -> Maybe String
+
+-- todo: shrink to Applicative
+class (Applicative f, Monad f) => TypeEnvironment f exp tipe | f -> exp tipe where
+  typeCheck :: exp -> f tipe
+  eq :: tipe -> tipe -> f ()
+
+typeCheckBool :: (TypeEnvironment f exp tipe, Boolean exp, BooleanType tipe) => exp -> f tipe
+typeCheckBool e =
+  case e of
+    (viewBoolean -> Just _) -> pure boolean
+    (viewIfThenElse -> Just (cond, thenBranch, elseBranch)) -> do
+      (viewBooleanType -> True) <- typeCheckBool cond
+      tb <- typeCheck thenBranch
+      eb <- typeCheck elseBranch
+      tb `eq` eb
+      return tb
+    {-
+
+class (TypeEnvironment f) => TypeCheck f e t | e -> f t where
+  typeCheck :: e -> f t
+
+
+instance (TypeEnvironment f, Boolean e, IfThenElse e, BoolType t) => TypeCheck f e t where
+  typeCheck = undefined
+  {-
+typeCheck e =
+  case e of
+    ifThenElse a b c -> do
+      bType <- typeCheck a
+      when (bType /= bool) fail "jkl"
+      thenType <- typeCheck b
+      elseType <- typeCheck c
+      when (thenType /= elseType) fail "fjdksl"
+      return thenType
+      -}
+      -}
